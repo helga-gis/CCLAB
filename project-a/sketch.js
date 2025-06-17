@@ -196,8 +196,8 @@ function draw() {
     creaColT = lerp(255,0,frameCount*0.01);
   }
   }
-  textSize(20);
-   text(mouseX + ", " + mouseY, mouseX, mouseY);
+  // textSize(20);
+  //  text(mouseX + ", " + mouseY, mouseX, mouseY);
 }
 
 function generateNotes() {
