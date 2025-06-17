@@ -1,4 +1,3 @@
-//
 let stroColR = 255;  //line color
 let stroColG = 255;
 let stroColB = 255;
@@ -197,8 +196,8 @@ function draw() {
     creaColT = lerp(255,0,frameCount*0.01);
   }
   }
-  // textSize(20);
-  //  text(mouseX + ", " + mouseY, mouseX, mouseY);
+  textSize(20);
+   text(mouseX + ", " + mouseY, mouseX, mouseY);
 }
 
 function generateNotes() {
@@ -288,7 +287,8 @@ function drawFermata(x, y, noiseOffset, noiseyFactor, eR, eG, eB){
 //fermata
   stroke(eR, eG, eB);
   strokeWeight(2);
-  fill(144, 240, 232);
+  noFill();
+  //fill(144, 240, 232);
   arc(0, 0 - 10, 25, 25, PI, TWO_PI, OPEN);
   noStroke();
   fill(eR, eG, eB);
@@ -372,9 +372,13 @@ function mousePressed() {
   //...then generateNotes
   generateNotes();
     }
+  let dd = dist(mouseX, mouseY, 760, 425);
+  if (dd < 12){
+  
 //   if (mouseX > 745 && mouseX < 770 && mouseY > 375 && mouseY < 390){
-//     bgColR = random(255);
-//     bgColG = random(255);
-//     bgColB = random(255);
-// }
+    bgColR = random(0, 255);
+    bgColG = random(0, 255);
+    bgColB = random(0, 255);
+    background(bgColR, bgColG, bgColB);
+    }
 }
