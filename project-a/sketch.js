@@ -531,7 +531,7 @@ function mousePressed() {
     } else {
     speedX = -constrain(abs(speedX) * speedFactor, 0.5, 20);  //if creature bounce, speed = -speed, so abs needed
     }
-    
+
     if (speedY > 0) {
     speedY = constrain(abs(speedY) * speedFactor, 0.5, 20);
     } else {
