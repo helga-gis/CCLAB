@@ -1,13 +1,11 @@
-let stroColR = 255;  //staff color
+let stroColR = 255;  //staff var
 let stroColG = 255;
 let stroColB = 255;
-let stroColT = 255;
 let staffYs = [100, 250, 400]; //y position of 3 sets of 5 lines
 
-let notes = [];
-let noteTypes = ["whole", "half", "dotted half", "quarter", "dotted quarter", "eighth", "dotted eighth", "sixteenth"]; // all possible note types
-//add some rests???
-
+let notes = []; //notes arrays
+let noteTypes = ["whole", "half", "dotted half", "quarter", "dotted quarter", "eighth", "dotted eighth", "sixteenth"]; 
+// all possible note types
 let noteCount;
 let notes0x = [];
 let notes0y = [];
@@ -19,27 +17,25 @@ let notes2x = [];
 let notes2y = [];
 let notes2types = [];
 
-let specialNoteX;
+let notesActive = false;
+
+let specialNoteX; //special note var
 let specialNoteY;
 let specialNoteR;
 let specialNoteG;
 let specialNoteB;
 let specialNoteClicked = false;
-let creatureActive = false;
-let notesActive = false;
 
-let hiddenNoteX;
+
+let hiddenNoteX;  //hidden note var
 let hiddenNoteY;
 let hiddenNoteClicked = false;
-let hiddenNoteSound;
 
-let fermataSound;
-
-let bgColR = 144;
+let bgColR = 144; //background color
 let bgColG = 240;
 let bgColB = 232;
 
-let creaColR = 255;
+let creaColR = 255; //creature var
 let creaColG = 255;
 let creaColB = 255;
 let creaColT = 255;
@@ -48,10 +44,14 @@ let x1 = dia / 2;
 let y1 = 200;
 let speedX = 3;
 let speedY = 3;
-let creatureDiaLocked = true; // Initially true – fixed size
+let creatureDiaLocked = true; 
 
-let noiseControlX = 0;
+let creatureActive = false;
 
+
+let noiseControlX = 0;  //noise, will be controled by creature's X later
+
+//audios
 let bap;
 let cadence;
 
@@ -64,14 +64,13 @@ function setup() {
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
   
-  let staffIndex = floor(random(0, 3));
-  let lineIndex = int(random(-2, 10));  
+  let staffIndex = floor(random(0, 3));// three staffs
+  let lineIndex = int(random(-2, 10)); // location on each staffs
 
-  //random position for specialnote
-  specialNoteX = random(100, 730);
+  specialNoteX = random(100, 730);  //random position for specialnote
   specialNoteY = staffYs[staffIndex] + lineIndex * 5;
   
-  let hiddenStaffIndex = floor(random(0, 3)) ;
+  let hiddenStaffIndex = floor(random(0, 3)) ; //same for hidden note
   let hiddenLineIndex = int(random(-2, 10));
   
   hiddenNoteX = random(111, 689);
@@ -81,30 +80,28 @@ function setup() {
 
 function draw() {
   background(bgColR, bgColG, bgColB);
-  //constrain(mouseX, 0, width);
   if (creatureActive == true) {
-  noiseControlX = x1;
+    noiseControlX = x1;
   }
-  let noisiness = map(noiseControlX, 0, width, 0, 1);
-
+  let noisiness = map(noiseControlX, 0, width, 0, 1); 
 
 //draw staffs 
-  stroke(stroColR, stroColG, stroColB, stroColT);
+  stroke(stroColR, stroColG, stroColB);
     for (let g = 0; g < 3; g++) {
-    for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 5; i++) {
       drawLine(width/2, staffYs[g] + i * 10, 1000 * (g + 1) + i * 100, noisiness);
       }
     }
 
 //draw bass clefs
   for (let g = 0; g < 3; g++) {
-      drawBassClef(10, staffYs[g] - 30, 1000 * (g + 1), noisiness);
+    drawBassClef(10, staffYs[g] - 30, 1000 * (g + 1), noisiness);
   }
   
 //draw notes
   if (notesActive == true) {
     for(let i = 0; i < notes0x.length; i++){
-      // draw notes for the first line using notes0x anf notes0y array
+      // draw notes for the first line using notes0x anf notes0y array... etc
       drawNote(notes0x[i], notes0y[i], notes0types[i], 1000, noisiness)
     }
     for(let i = 0; i < notes1x.length; i++){
@@ -116,18 +113,18 @@ function draw() {
   }
   
 //draw fermata
-    let fR = 127 + 127 * sin(frameCount * 0.1);
-    let fG = 127 + 127 * sin(frameCount * 0.1 + TWO_PI / 3);
+    let fR = 127 + 127 * sin(frameCount * 0.1); //fermata colors
+    let fG = 127 + 127 * sin(frameCount * 0.1 + TWO_PI / 3);  //two_pi radians = 360
     let fB = 127 + 127 * sin(frameCount * 0.1 + (2 * TWO_PI) / 3);
     let fT = 127 + 127 * sin(frameCount * 0.1);
       drawFermata(760, 400, 1000, noisiness, fR, fG, fB);
   
 //draw special note
-  if(specialNoteClicked == false){
+  if(specialNoteClicked == false){  //click get color
     specialNoteR = fR;
     specialNoteG = fG;
     specialNoteB = fB; 
-  } else {
+  } else {  //bg color
     specialNoteR = bgColR;
     specialNoteG = bgColG;
     specialNoteB = bgColB;
@@ -142,13 +139,13 @@ function draw() {
   pop();
   
 //draw hidden note
-//if mouse on hidden note
-  let hoveringHiddenNote = false;
+  let hoveringHiddenNote = false; //if mouse on hidden note
   if (mouseX > hiddenNoteX - 6 && mouseX < hiddenNoteX + 6 && mouseY > hiddenNoteY - 4 && mouseY < hiddenNoteY + 4) {
-  hoveringHiddenNote = true;
+    hoveringHiddenNote = true;
   }
   //console.log(hiddenNoteX, hiddenNoteY);
-//set color depending on hover
+
+  //set color depending on hover
   let noteR;
   let noteG;
   let noteB;
@@ -171,8 +168,7 @@ function draw() {
   stroke(255, fT);
   ellipse(hiddenNoteX, hiddenNoteY, 12, 8);
 
-//if mouse on hidden note
-  if (hoveringHiddenNote == true) {
+  if (hoveringHiddenNote == true) { //if mouse on hidden note
   let hiddenText = "You found a hidden note!";
   textSize(20);
   fill(fR, fG, fB);
@@ -181,153 +177,154 @@ function draw() {
 
   
 // Draw title, notations, dynamics...etc
-  textSize(48);
+  textSize(48); //title "Muse"
   fill(fR, fG, fB);
   stroke(255);
   text("Muse", 345, 66);
-  stroke(fR, fG, fB);
+
+  stroke(fR, fG, fB); //tempos
   textSize(20);
   text("Allegro", 60, 90); 
   text("Largo", 60, 390);
   
-  
   noFill();
   stroke(0);
   strokeWeight(1);
   textSize(20);
-  text("mp",65,170);
+  text("mp",65,170);  
   line(100, 165, 200, 155);
   line(100, 165, 200, 175);
+
+  text("ppp",740,465);
   line(540, 445, 720, 460);
   line(540, 475, 720, 460);
-  text("ppp",740,465);
+  
   text("f", 185, 315);
   line(200, 310, 300, 300);
   line(200, 310, 300, 320);
   text("ff", 315,315);
+
   text("sfz", 620, 315); 
+
+  text("fff", 420, 465);
   line(300, 460, 400, 450);
   line(300, 460, 400, 470);
-  text("fff", 420, 465);
+  
   text("Ped.", 120, 460);
   line(120, 465, 250, 465);
   
-  
   noFill();
   stroke(0);
-  arc(250, 230, 120, 30, PI, TWO_PI); 
+  arc(250, 230, 120, 30, PI, TWO_PI);   //slur
   
-  if (creatureActive == true) {
-// draw the creature
-  stroke(255);
-  strokeWeight(1);
-    
-  creaColR = fR;
-  creaColG = fG;
-  creaColB = fB;
-  fill(creaColR, creaColG, creaColB, creaColT);
 
-  if (creatureDiaLocked == true) {
-  dia = 80;
-  } else if (creatureDiaLocked == false) {
-  let noiseValue = noise(frameCount * 0.01);
-  dia = noiseValue * 200;
-  }
-    
-  let sinValue = sin(frameCount * 0.01);
-  x1 = map(sinValue, -1, 1, dia / 2, width - dia / 2);
-  let cosValue = cos(-frameCount * 0.01);
-  circle(x1, y1, dia);
-  x1 = x1 + speedX;
-  y1 = y1 + speedY;
-  
-  // Eye positions relative to the creature center
-  let eyeOffsetX = dia * 0.2;
-  let eyeOffsetY = dia * 0.2;
-  let eyeSize = dia * 0.15;
-  let pupilSize = dia * 0.07;
+  if (creatureActive == true) { // draw the creature
 
-  // Calculate direction to mouse
-  let dx = mouseX - x1;
-  let dy = mouseY - y1;
-  let angle = atan2(dy, dx);
-  let pupilOffset = dia * 0.05;
+    stroke(255);
+    strokeWeight(1);
+    creaColR = fR;
+    creaColG = fG;
+    creaColB = fB;
+    fill(creaColR, creaColG, creaColB, creaColT);
 
-  // Draw two eyes
-  fill(255);
-  noStroke();
-  ellipse(x1 - eyeOffsetX, y1 - eyeOffsetY, eyeSize, eyeSize);
-  ellipse(x1 + eyeOffsetX, y1 - eyeOffsetY, eyeSize, eyeSize);
-
-  // Draw pupils looking toward mouse
-  fill(0);
-  ellipse(x1 - eyeOffsetX + cos(angle) * pupilOffset, y1 - eyeOffsetY + sin(angle) * pupilOffset, pupilSize, pupilSize);
-  ellipse(x1 + eyeOffsetX + cos(angle) * pupilOffset, y1 - eyeOffsetY + sin(angle) * pupilOffset, pupilSize, pupilSize);  
-    
-    
-//bounce
-  if (x1 - dia / 2 < 0 || x1 + dia / 2 > width) {
-    speedX = -speedX;
-  }
-  if (y1 - dia / 2 < 100 || y1 + dia / 2 > 440) {
-    speedY = -speedY;
-    // Only regenerate if notes are active
-    if (notesActive == true) {
-      // Clear all note arrays
-      notes0x = [];
-      notes0y = [];
-      notes0types = [];
-      notes1x = [];
-      notes1y = [];
-      notes1types = [];
-      notes2x = [];
-      notes2y = [];
-      notes2types = [];
-
-      generateNotes();
+    if (creatureDiaLocked == true) {  //when not clicked on the creature, dia is locked to 80
+      dia = 80;
+    } else if (creatureDiaLocked == false) {
+      let noiseValue = noise(frameCount * 0.01);
+      dia = noiseValue * 200;
     }
-  }
-  
-// staff line color change
-  if(y1 + dia / 2 > 100 && y1 - dia / 2 < 140 ){
-    stroColG = random(100, 255);
-  } else{
-    stroColG = 255;
-  }
-  if(y1 > 250 && y1 < 290 ){
-    stroColR = random(100, 255);
-  } else{
-    stroColR = 255;
-  }
-  if(y1 + dia / 2 > 400 && y1 - dia / 2 < 440 ){
-    stroColB = random(100, 255);
-  } else{
-    stroColB = 255;
-  }
-
-//if creature reaches fermata/bassclefs, get transparent 
-  let creaFerDist = dist(x1,y1,760,373);
-  let creaBass1Dist = dist(x1,y1,45,120);
-  let creaBass2Dist = dist(x1,y1,45,270);
-  let creaBass3Dist = dist(x1,y1,45,420);
-
-  if(creaFerDist < dia / 2){
-    creaColT = lerp(255,0,frameCount*0.005);
-  } else if(creaBass1Dist < dia / 2){
-    creaColT = lerp(255,170,frameCount*0.001);
-  } else if(creaBass2Dist < dia / 2){
-    creaColT = lerp(255,85,frameCount*0.001);
-  } else if(creaBass3Dist < dia / 2){
-    creaColT = lerp(255,0,frameCount*0.001);
-  } else {
-    creaColT = 255;
-  }
-
+      
+    let sinValue = sin(frameCount * 0.01);
+    x1 = map(sinValue, -1, 1, dia / 2, width - dia / 2);
+    let cosValue = cos(-frameCount * 0.01);
+    circle(x1, y1, dia);
+    x1 = x1 + speedX;
+    y1 = y1 + speedY;
     
+    // Eye positions 
+    let eyeOffsetX = dia * 0.2;
+    let eyeOffsetY = dia * 0.2;
+    let eyeSize = dia * 0.15;
+    let pupilSize = dia * 0.07;
+
+    let maxOffset = dia * 0.05;   
+
+    let pupilOffsetX = map(mouseX, x1 - 100, x1 + 100, -maxOffset, maxOffset);
+    let pupilOffsetY = map(mouseY, y1 - 100, y1 + 100, -maxOffset, maxOffset);
+    pupilOffsetX = constrain(pupilOffsetX, -maxOffset, maxOffset);  //to not burn my laptop :D
+    pupilOffsetY = constrain(pupilOffsetY, -maxOffset, maxOffset);  
+
+    // Draw eyes
+    fill(255);
+    noStroke();
+    ellipse(x1 - eyeOffsetX, y1 - eyeOffsetY, eyeSize * 3/2, eyeSize);  //  3/2 is note w/h ratio, to make eyes look like notes
+    ellipse(x1 + eyeOffsetX, y1 - eyeOffsetY, eyeSize * 3/2, eyeSize);
+
+    // Draw pupils looking toward mouse
+    fill(0);
+    ellipse(x1 - eyeOffsetX + pupilOffsetX, y1 - eyeOffsetY + pupilOffsetY, pupilSize, pupilSize);
+    ellipse(x1 + eyeOffsetX + pupilOffsetX, y1 - eyeOffsetY + pupilOffsetY, pupilSize, pupilSize);
+      
+    //creature bounce
+    if (x1 - dia / 2 < 0 || x1 + dia / 2 > width) {
+      speedX = -speedX;
+      }
+    if (y1 - dia / 2 < 100 || y1 + dia / 2 > 440) {
+      speedY = -speedY;
+      // Only regenerate if notes are active
+    if (notesActive == true) {
+        // Clear all note arrays
+        notes0x = [];
+        notes0y = [];
+        notes0types = [];
+        notes1x = [];
+        notes1y = [];
+        notes1types = [];
+        notes2x = [];
+        notes2y = [];
+        notes2types = [];
+
+        generateNotes();
+      }
+    }
     
- }
-  textSize(20);
-   text(mouseX + ", " + mouseY, mouseX, mouseY);
+    // staff line color change
+    if(y1 + dia / 2 > 100 && y1 - dia / 2 < 140 ){  //staff 1
+      stroColG = random(100, 255);
+    } else{
+      stroColG = 255;
+    }
+    if(y1 > 250 && y1 < 290 ){  //staff 2
+      stroColR = random(100, 255);
+    } else{
+      stroColR = 255;
+    }
+    if(y1 + dia / 2 > 400 && y1 - dia / 2 < 440 ){  //staff 3
+      stroColB = random(100, 255);
+    } else{
+      stroColB = 255;
+    }
+
+    //if creature reaches fermata/bassclefs, get transparent 
+     let creaFerDist = dist(x1,y1,760,373);
+     let creaBass1Dist = dist(x1,y1,45,120);
+     let creaBass2Dist = dist(x1,y1,45,270);
+     let creaBass3Dist = dist(x1,y1,45,420);
+
+      if(creaFerDist < dia / 2){
+       creaColT = lerp(255,0,frameCount*0.005);
+      } else if(creaBass1Dist < dia / 2){
+       creaColT = lerp(255,170,frameCount*0.001);
+      } else if(creaBass2Dist < dia / 2){
+       creaColT = lerp(255,85,frameCount*0.001);
+      } else if(creaBass3Dist < dia / 2){
+       creaColT = lerp(255,0,frameCount*0.001);
+      } else {
+       creaColT = 255;
+      }
+  }
+  // textSize(20);
+  // text(mouseX + ", " + mouseY, mouseX, mouseY);
   
   //console.log(speedX, speedY);
   
@@ -421,7 +418,6 @@ function drawFermata(x, y, noiseOffset, noiseyFactor, eR, eG, eB){
   stroke(eR, eG, eB);
   strokeWeight(2);
   noFill();
-  //fill(144, 240, 232);
   arc(0, 0 - 10, 25, 25, PI, TWO_PI, OPEN);
   noStroke();
   fill(eR, eG, eB);
@@ -434,8 +430,8 @@ function drawNote(x, y, typeOfNote, noiseOffset, noiseyFactor) {
   let curveHeight = 50; //the range of the curve
   let dynamicNoteY = map(noteNoiseValue, 0, 1, curveHeight / 2, -curveHeight / 2);
   push()
+
   translate(x, y + dynamicNoteY);
-  // noStroke();
   strokeWeight(1);
   let w = 12;  //note width
   let h = 8;   //note height
@@ -502,8 +498,8 @@ function mousePressed() {
      if (dHidden < 8) {
       hiddenNoteClicked = true;
       bap.play();
+     }
   }
-}
 //if mouse clicked fermata  
   let fermataDist = dist(mouseX, mouseY, 760, 425);
   if (fermataDist < 12) {
@@ -525,23 +521,24 @@ function mousePressed() {
     notes2types = [];
    //...then generateNotes
     generateNotes();
-    }
+  }
   
-// if mouse clicked "Allegro"
+// if mouse clicked "Allegro", speed up
   if (mouseX > 60 && mouseX < 122 && mouseY > 75 && mouseY < 96) {
     let speedFactor = 1.2;
     if (speedX > 0) {
-    speedX = constrain(abs(speedX) * speedFactor, 0.5, 20);
+    speedX = constrain(abs(speedX) * speedFactor, 0.5, 20);   //abs: absolute value
     } else {
-    speedX = -constrain(abs(speedX) * speedFactor, 0.5, 20);
+    speedX = -constrain(abs(speedX) * speedFactor, 0.5, 20);  //if creature bounce, speed = -speed, so abs needed
     }
+    
     if (speedY > 0) {
     speedY = constrain(abs(speedY) * speedFactor, 0.5, 20);
     } else {
     speedY = -constrain(abs(speedY) * speedFactor, 0.5, 20);
     }  
   }
-// if mouse clicked "Largo"
+// if mouse clicked "Largo", speed down
   if (mouseX > 60 && mouseX < 110 && mouseY > 375 && mouseY < 396) {
     let speedFactor = 0.8;
     if (speedX > 0) {
@@ -564,5 +561,5 @@ function mousePressed() {
     bgColG = random(0, 255);
     bgColB = random(0, 255);
     background(bgColR, bgColG, bgColB);
-    }
+  }
 }
