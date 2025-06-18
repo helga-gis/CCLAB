@@ -1,4 +1,4 @@
-let stroColR = 255;  //line color
+let stroColR = 255;  //staff color
 let stroColG = 255;
 let stroColB = 255;
 let stroColT = 255;
@@ -6,7 +6,7 @@ let staffYs = [100, 250, 400]; //y position of 3 sets of 5 lines
 
 let notes = [];
 let noteTypes = ["whole", "half", "dotted half", "quarter", "dotted quarter", "eighth", "dotted eighth", "sixteenth"]; // all possible note types
-//add some rests
+//add some rests???
 
 let noteCount;
 let notes0x = [];
@@ -21,8 +21,19 @@ let notes2types = [];
 
 let specialNoteX;
 let specialNoteY;
+let specialNoteR;
+let specialNoteG;
+let specialNoteB;
+let specialNoteClicked = false;
 let creatureActive = false;
 let notesActive = false;
+
+let hiddenNoteX;
+let hiddenNoteY;
+let hiddenNoteClicked = false;
+let hiddenNoteSound;
+
+let fermataSound;
 
 let bgColR = 144;
 let bgColG = 240;
@@ -37,10 +48,19 @@ let x1 = dia / 2;
 let y1 = 200;
 let speedX = 3;
 let speedY = 3;
+let creatureDiaLocked = true; // Initially true – fixed size
+
+let noiseControlX = 0;
+
+let bap;
+let cadence;
+
+function preload(){
+  bap = loadSound("audio/bloibb.mp3");
+  cadence = loadSound("audio/GtoC_cadence");
+}
 
 function setup() {
-  createCanvas(800, 500);
-  
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
   
@@ -50,14 +70,25 @@ function setup() {
   //random position for specialnote
   specialNoteX = random(100, 730);
   specialNoteY = staffYs[staffIndex] + lineIndex * 5;
+  
+  let hiddenStaffIndex = floor(random(0, 3)) ;
+  let hiddenLineIndex = int(random(-2, 10));
+  
+  hiddenNoteX = random(111, 689);
+  hiddenNoteY = staffYs[hiddenStaffIndex] + hiddenLineIndex * 5;
+  
  }
 
 function draw() {
   background(bgColR, bgColG, bgColB);
-  
-  let noisiness = map(mouseX, 0, width, 0, 1);
+  //constrain(mouseX, 0, width);
+  if (creatureActive == true) {
+  noiseControlX = x1;
+  }
+  let noisiness = map(noiseControlX, 0, width, 0, 1);
 
-//draw lines 
+
+//draw staffs 
   stroke(stroColR, stroColG, stroColB, stroColT);
     for (let g = 0; g < 3; g++) {
     for (let i = 0; i < 5; i++) {
@@ -71,7 +102,7 @@ function draw() {
   }
   
 //draw notes
-  if (notesActive) {
+  if (notesActive == true) {
     for(let i = 0; i < notes0x.length; i++){
       // draw notes for the first line using notes0x anf notes0y array
       drawNote(notes0x[i], notes0y[i], notes0types[i], 1000, noisiness)
@@ -88,24 +119,78 @@ function draw() {
     let fR = 127 + 127 * sin(frameCount * 0.1);
     let fG = 127 + 127 * sin(frameCount * 0.1 + TWO_PI / 3);
     let fB = 127 + 127 * sin(frameCount * 0.1 + (2 * TWO_PI) / 3);
+    let fT = 127 + 127 * sin(frameCount * 0.1);
       drawFermata(760, 400, 1000, noisiness, fR, fG, fB);
   
 //draw special note
+  if(specialNoteClicked == false){
+    specialNoteR = fR;
+    specialNoteG = fG;
+    specialNoteB = fB; 
+  } else {
+    specialNoteR = bgColR;
+    specialNoteG = bgColG;
+    specialNoteB = bgColB;
+  }
+  
   push();
   translate(specialNoteX, specialNoteY);
-  fill(fR, fG, fB);
-  stroke(fR, fG, fB);
+  fill(specialNoteR, specialNoteG, specialNoteB);
+  stroke(specialNoteR, specialNoteG, specialNoteB);
   strokeWeight(1);
   ellipse(0, 0, 12, 8); 
   pop();
   
+//draw hidden note
+//if mouse on hidden note
+  let hoveringHiddenNote = false;
+  if (mouseX > hiddenNoteX - 6 && mouseX < hiddenNoteX + 6 && mouseY > hiddenNoteY - 4 && mouseY < hiddenNoteY + 4) {
+  hoveringHiddenNote = true;
+  }
+  //console.log(hiddenNoteX, hiddenNoteY);
+//set color depending on hover
+  let noteR;
+  let noteG;
+  let noteB;
   
-// Draw the title "Muse"
+  if (hoveringHiddenNote == true) {
+    noteR = fR;
+    noteG = fG;
+    noteB = fB;
+  } else if (hiddenNoteClicked == true) {
+    noteR = fR;
+    noteG = fG;
+    noteB = fB;
+  } else {
+    noteR = bgColR;
+    noteG = bgColG;
+    noteB = bgColB;
+  }
+//hidden note
+  fill(noteR, noteG, noteB);
+  stroke(255, fT);
+  ellipse(hiddenNoteX, hiddenNoteY, 12, 8);
+
+//if mouse on hidden note
+  if (hoveringHiddenNote == true) {
+  let hiddenText = "You found a hidden note!";
+  textSize(20);
+  fill(fR, fG, fB);
+  text(hiddenText, hiddenNoteX - textWidth(hiddenText) / 2, hiddenNoteY - 20);
+  }
+
+  
+// Draw title, notations, dynamics...etc
   textSize(48);
   fill(fR, fG, fB);
   stroke(255);
   text("Muse", 345, 66);
   stroke(fR, fG, fB);
+  textSize(20);
+  text("Allegro", 60, 90); 
+  text("Largo", 60, 390);
+  
+  
   noFill();
   stroke(0);
   strokeWeight(1);
@@ -126,32 +211,60 @@ function draw() {
   text("fff", 420, 465);
   text("Ped.", 120, 460);
   line(120, 465, 250, 465);
-  textSize(20);
-  text("Allegro", 60, 90); 
-
+  
   
   noFill();
   stroke(0);
   arc(250, 230, 120, 30, PI, TWO_PI); 
   
-  if (creatureActive) {
+  if (creatureActive == true) {
 // draw the creature
   stroke(255);
   strokeWeight(1);
+    
+  creaColR = fR;
+  creaColG = fG;
+  creaColB = fB;
   fill(creaColR, creaColG, creaColB, creaColT);
 
+  if (creatureDiaLocked == true) {
+  dia = 80;
+  } else if (creatureDiaLocked == false) {
   let noiseValue = noise(frameCount * 0.01);
-  let dia = noiseValue * 200;
+  dia = noiseValue * 200;
+  }
+    
   let sinValue = sin(frameCount * 0.01);
   x1 = map(sinValue, -1, 1, dia / 2, width - dia / 2);
   let cosValue = cos(-frameCount * 0.01);
-  //y1 = map(cosValue, -1, 1, dia / 2, height - dia / 2);
   circle(x1, y1, dia);
   x1 = x1 + speedX;
   y1 = y1 + speedY;
   
- // x2 = map(cosValue, -1, 1, dia / 2, height - dia / 2);
-  
+  // Eye positions relative to the creature center
+  let eyeOffsetX = dia * 0.2;
+  let eyeOffsetY = dia * 0.2;
+  let eyeSize = dia * 0.15;
+  let pupilSize = dia * 0.07;
+
+  // Calculate direction to mouse
+  let dx = mouseX - x1;
+  let dy = mouseY - y1;
+  let angle = atan2(dy, dx);
+  let pupilOffset = dia * 0.05;
+
+  // Draw two eyes
+  fill(255);
+  noStroke();
+  ellipse(x1 - eyeOffsetX, y1 - eyeOffsetY, eyeSize, eyeSize);
+  ellipse(x1 + eyeOffsetX, y1 - eyeOffsetY, eyeSize, eyeSize);
+
+  // Draw pupils looking toward mouse
+  fill(0);
+  ellipse(x1 - eyeOffsetX + cos(angle) * pupilOffset, y1 - eyeOffsetY + sin(angle) * pupilOffset, pupilSize, pupilSize);
+  ellipse(x1 + eyeOffsetX + cos(angle) * pupilOffset, y1 - eyeOffsetY + sin(angle) * pupilOffset, pupilSize, pupilSize);  
+    
+    
 //bounce
   if (x1 - dia / 2 < 0 || x1 + dia / 2 > width) {
     speedX = -speedX;
@@ -159,7 +272,7 @@ function draw() {
   if (y1 - dia / 2 < 100 || y1 + dia / 2 > 440) {
     speedY = -speedY;
     // Only regenerate if notes are active
-    if (notesActive) {
+    if (notesActive == true) {
       // Clear all note arrays
       notes0x = [];
       notes0y = [];
@@ -191,13 +304,33 @@ function draw() {
   } else{
     stroColB = 255;
   }
-  let creatureDist = dist(x1,y1,760,373);
-  if(creatureDist < dia / 2){
-    creaColT = lerp(255,0,frameCount*0.01);
+
+//if creature reaches fermata/bassclefs, get transparent 
+  let creaFerDist = dist(x1,y1,760,373);
+  let creaBass1Dist = dist(x1,y1,45,120);
+  let creaBass2Dist = dist(x1,y1,45,270);
+  let creaBass3Dist = dist(x1,y1,45,420);
+
+  if(creaFerDist < dia / 2){
+    creaColT = lerp(255,0,frameCount*0.005);
+  } else if(creaBass1Dist < dia / 2){
+    creaColT = lerp(255,170,frameCount*0.001);
+  } else if(creaBass2Dist < dia / 2){
+    creaColT = lerp(255,85,frameCount*0.001);
+  } else if(creaBass3Dist < dia / 2){
+    creaColT = lerp(255,0,frameCount*0.001);
+  } else {
+    creaColT = 255;
   }
-  }
-  // textSize(20);
-  //  text(mouseX + ", " + mouseY, mouseX, mouseY);
+
+    
+    
+ }
+  textSize(20);
+   text(mouseX + ", " + mouseY, mouseX, mouseY);
+  
+  //console.log(speedX, speedY);
+  
 }
 
 function generateNotes() {
@@ -352,30 +485,81 @@ function mousePressed() {
   let d = dist(mouseX, mouseY, specialNoteX, specialNoteY);
   if (d < 12) {
     creatureActive = true;
+    specialNoteClicked = true; 
+  }
+
+//if mouse clicked the creature
+  if (creatureActive == true) {
+  let distToCreature = dist(mouseX, mouseY, x1, y1);
+    if (distToCreature < dia / 2) {
+    creatureDiaLocked = false;
+    }
+  }
+
+//if mouse clicked hidden note
+  if (hiddenNoteClicked == false ) {
+    let dHidden = dist(mouseX, mouseY, hiddenNoteX, hiddenNoteY);
+     if (dHidden < 8) {
+      hiddenNoteClicked = true;
+      bap.play();
+  }
+}
+//if mouse clicked fermata  
+  let fermataDist = dist(mouseX, mouseY, 760, 425);
+  if (fermataDist < 12) {
+    cadence.play();
+  }
+   
+//if mouse clicked "Muse"
+  if (mouseX > 345 && mouseX < 460 && mouseY > 32 && mouseY < 66){
+    notesActive = true;  
+   //generate new notes with empty arrays first...
+    notes0x = [];
+    notes0y = [];
+    notes0types = [];
+    notes1x = [];
+    notes1y = [];
+    notes1types = [];
+    notes2x = [];
+    notes2y = [];
+    notes2types = [];
+   //...then generateNotes
+    generateNotes();
+    }
+  
+// if mouse clicked "Allegro"
+  if (mouseX > 60 && mouseX < 122 && mouseY > 75 && mouseY < 96) {
+    let speedFactor = 1.2;
+    if (speedX > 0) {
+    speedX = constrain(abs(speedX) * speedFactor, 0.5, 20);
+    } else {
+    speedX = -constrain(abs(speedX) * speedFactor, 0.5, 20);
+    }
+    if (speedY > 0) {
+    speedY = constrain(abs(speedY) * speedFactor, 0.5, 20);
+    } else {
+    speedY = -constrain(abs(speedY) * speedFactor, 0.5, 20);
+    }  
+  }
+// if mouse clicked "Largo"
+  if (mouseX > 60 && mouseX < 110 && mouseY > 375 && mouseY < 396) {
+    let speedFactor = 0.8;
+    if (speedX > 0) {
+    speedX = constrain(abs(speedX) * speedFactor, 0.5, 20);
+    } else {
+    speedX = -constrain(abs(speedX) * speedFactor, 0.5, 20);
+    }
+
+    if (speedY > 0) {
+    speedY = constrain(abs(speedY) * speedFactor, 0.5, 20);
+    } else {
+    speedY = -constrain(abs(speedY) * speedFactor, 0.5, 20);
+    }
   }
   
-  if (mouseX > 345 && mouseX < 460 && mouseY > 32 && mouseY < 66){
-    notesActive = true;
-   // generateNewNotes();
-    
-  //empty arrays first...
-  notes0x = [];
-  notes0y = [];
-  notes0types = [];
-  notes1x = [];
-  notes1y = [];
-  notes1types = [];
-  notes2x = [];
-  notes2y = [];
-  notes2types = [];
-
-  //...then generateNotes
-  generateNotes();
-    }
+//if mouse clicked on ending note
   let dd = dist(mouseX, mouseY, 760, 425);
   if (dd < 12){
-  
-//   if (mouseX > 745 && mouseX < 770 && mouseY > 375 && mouseY < 390){
     bgColR = random(0, 255);
     bgColG = random(0, 255);
     bgColB = random(0, 255);
