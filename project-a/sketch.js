@@ -57,7 +57,7 @@ let cadence;
 
 function preload(){
   bap = loadSound("audio/bloibb.mp3");
-  cadence = loadSound("audio/GtoC_cadence");
+  cadence = loadSound("audio/GtoC_cadence.mp3");
 }
 
 function setup() {
