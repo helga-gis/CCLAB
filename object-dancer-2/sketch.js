@@ -212,7 +212,7 @@ class GisDancer {
     // your dancer should perform some kind of reaction (i.e. make a special move or gesture) 
     //this.speedY = -10
     this.speedY = 10;   
-    this.backY = true; // activate bounce
+    this.backY = true; 
 
   }
   drawReferenceShapes() {
