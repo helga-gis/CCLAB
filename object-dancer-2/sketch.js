@@ -12,8 +12,13 @@
 
 let dancer;
 
-let NUM_OF_PARTICLES = 30; // Decide the initial number of particles.
+let NUM_OF_PARTICLES = 200; // Decide the initial number of particles.
 let particles = [];
+
+function preload(){
+  ah = loadSound("assets/ahh.mp3");
+}
+
 
 function setup() {
   // no adjustments in the setup function needed...
@@ -31,27 +36,59 @@ function draw() {
   background(0);
   drawFloor(); // for reference only
 
-    if(mouseIsPressed == true){
-      for(let i = 0; i < NUM_OF_PARTICLES; i++){
-      particles.push(new Particle (mouseX, mouseY));
-      }
-    }
 
-  dancer.update();
-  dancer.display();
+//particles
 
+    //  if(mouseIsPressed == true){
+    //   for(let i = 0; i < NUM_OF_PARTICLES; i++){
+    //   particles.push(new Particle (mouseX, mouseY));
+    //   }
+    // } 
 
   // update and display
     for (let i = 0; i < particles.length; i++) {
-    let p = particles[i];
-    p.update();
-    p.display();
-    p.checkOnScreen();
+    // let p = particles[i];
+    particles[i].update();
+    particles[i].display();
+    particles[i].checkOnScreen();
   }
 
+    // // delete confettis that are not on screen
+    // // for(let i = 0; i < confettis.length; i++){
+
+    for(let i = particles.length-1; i >= 0 ; i--){
+      let p = particles[i];
+      if(p.onScreen == false){
+      // this confetti should go
+          particles.splice(i, 1);
+      }
+    }
+
+    //check how many particles on screen
+      fill(255);  
+      text(particles.length, 10, 10);
 
 
 
+    dancer.hit = false;
+
+    //if  particle hit dancer
+    for (let i = 0; i < particles.length; i++) {
+      let p = particles[i];
+      let dx = abs(p.x - dancer.x);
+      let dy = abs(p.y - (dancer.y + dancer.offsetY));
+
+      if (dx < 60 && dy < 100) { 
+        dancer.hit = true;
+        break;  //end this after one hit
+      }
+    }
+     //console.log(dancer.hit);
+     //console.log(windowWidth, windowHeight);
+
+//dancer
+  dancer.update();
+  dancer.display();
 
 }
 
@@ -77,6 +114,9 @@ class GisDancer {
 
     this.leftArmWaving = false;   //right arm uses this value as well
     this.lastWavingStart = 83974831;
+
+
+    this.hit = false;
   }
   update() {
     // update properties here to achieve
@@ -134,8 +174,17 @@ class GisDancer {
     // ******** //
     // ⬇️ draw your dancer from here ⬇️
 
-    //Body 
+    
+    if (this.hit) {
+    stroke(random(360), 255, 255);
+    strokeWeight(3);
+    ahh.play();
+    } else {
     noStroke();
+    }
+    
+    //Body 
+    //noStroke();
     fill(255,62,165); 
     ellipse(0, 0, 80, 100); 
 
@@ -148,15 +197,15 @@ class GisDancer {
 
     // Eyes
     fill(255);
-    ellipse(-12, -65, 15, 15);
-    ellipse(12, -65, 15, 15);
+    ellipse(-12, -65, 15, 20);
+    ellipse(12, -65, 15, 20);
     fill(0);
-    ellipse(-12, -65, 5, 5);
-    ellipse(12, -65, 5, 5);
+    ellipse(-12, -65, 7, 7);
+    ellipse(12, -65, 7, 7);
 
     // Mouth
     fill(255, 150, 0);
-    triangle(0, -55, -5, -50, 5, -50);
+    triangle(0, -52, -10, -45, 10, -45);
 
     // Left arm
     push()
@@ -180,11 +229,11 @@ class GisDancer {
 
     //Left foot
     fill("yellow");
-    ellipse(-35, 45, 30, 40);
+    ellipse(-31, 45, 24, 30);
    
     //Right foot
     fill("yellow");
-    ellipse(35, 45, 30, 40);
+    ellipse(31, 45, 24, 30);
 
 
     // ⬆️ draw your dancer above ⬆️
@@ -203,7 +252,7 @@ class GisDancer {
   triggerA(){
     // this function will be called when the "a" key is pressed.
     // your dancer should perform some kind of reaction (i.e. make a special move or gesture) 
-    console.log("helklo")
+    //console.log("helklo")
     this.leftArmWaving = true;
     this.lastWavingStart = frameCount;
   }
@@ -226,9 +275,6 @@ class GisDancer {
     stroke(0);
   }
 }
-
-
-
 /*
 GOAL:
 The goal is for you to write a class that produces a dancing being/creature/object/thing. In the next class, your dancer along with your peers' dancers will all dance in the same sketch that your instructor will put together. 
@@ -248,15 +294,23 @@ For this to work you need to follow one rule:
 Here are the key events that your dancer should react to in some way.
 */
 
-function keyPressed(){
-  if(key == "a"){
-    dancer.triggerA()
-  }else if(key == "d"){
-    dancer.triggerD()
+function keyPressed() {
+  if (key == "a") {
+    dancer.triggerA();
+  } else if (key == "d") {
+    dancer.triggerD();
+  } else if (key == "p") {
+    let burstX = random(width);
+    let burstY = random(height);
+      for (let i = 0; i < NUM_OF_PARTICLES; i++) {
+        let p = new Particle(burstX, burstY);
+        if (burstX > width / 2) {
+          p.speedX *= -1; 
+        }
+        particles.push(p);
+      }
   }
 }
-
-
 
 class Particle {
   // constructor function
@@ -264,35 +318,62 @@ class Particle {
     // properties (variables): particle's characteristics
     this.x = startX;
     this.y = startY;
-    this.size = random(2, 10);
-
-    this.speedX = random(5, 10); 
-    this.speedY = random(-5, 10);
+    this.originX = startX;
+    this.size = 3;
     
-    //this.speedYoffset = 0;
-    
-    //this.noiseVal = 0;
 
+    this.speedX = random(2, 5); 
+    this.speedY = random(-0.5, 2.5);
+
+    //console.log(this.SpeedX, ",", this.speedY);
+    this.gravity = 0.05;
+
+    this.spreadTimer = 0;
+
+    // this.trsp = 255;
+
+    // this.c = color(random(360), 255, 255, this.trsp);
+
+    this.h = random(360);
+    this.s = 255;
+    this.b = 255;
     this.trsp = 255;
-    this.gravity = 0.15;
 
     this.onScreen = true;
-
-    this.c = color(random(360), 255, 255);
-    
   }
+
   // methods (functions): particle's behaviors
   update() {
-    // (add) 
-    this.x+=this.speedX;
-    this.y+=this.speedY;
-    this.speedY+=this.gravity;
-    
-    this.trsp -= 50;
+    this.x += this.speedX;
+    this.spreadTimer++;
 
-    // for(let i = 0; i < confettis.length; i++){
-    //   this.speedX = (noise(i) * 0.01) * 10;
-    // }
+    this.spreadspeed = 0.5;
+
+    this.spreadDist = this.x - this.originX;
+
+    if (this.spreadDist < 50) {
+      this.spreadspeed = 0.5;
+    } else if (this.spreadDist < 100) {
+      this.spreadspeed = 1;
+    } else {
+      this.spreadspeed = 1.25;
+    }
+
+    if (this.spreadTimer > 30) {
+      this.spreadspeed *= 1.5;
+    }
+    this.y += this.speedY * this.spreadspeed;
+
+    if(abs(this.spreadDist) > 200){
+      this.maxDistToEdge = max(this.originX, windowWidth - this.originX);
+
+      this.trsp = map(this.spreadDist, 200, windowWidth/2, 255, 0);
+
+      this.trsp = map(abs(this.spreadDist), 200, this.maxDistToEdge, 255, 0);
+      this.trsp = constrain(this.trsp, 0,255);
+      console.log(this.trsp);
+    }
+    
 
   }
 
@@ -302,20 +383,17 @@ class Particle {
     push();
     translate(this.x, this.y);
     noStroke();
-    fill(this.c);
+    fill(this.h, this.s, this.b, this.trsp);
     
-    //quad(this.x, this.y+12, this.x+36, this.y , this.x, this.y -12, this.x-36, this.y );
-    quad(0, 12, 36, 0, 0, -12, -36, 0);
-    
+    quad(0, this.size, this.size*3, 0, 0, -this.size, -this.size*3, 0);
 
     pop();
   }
 
   checkOnScreen(){
-  if(this.y > height){
+  if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
     this.onScreen = false;
   }
  }
-
 
 }
