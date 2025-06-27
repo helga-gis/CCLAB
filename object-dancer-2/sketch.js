@@ -16,7 +16,7 @@ let NUM_OF_PARTICLES = 200; // Decide the initial number of particles.
 let particles = [];
 
 function preload(){
-  ah = loadSound("assets/ahh.mp3");
+  ah = loadSound("assests/ahh.mp3");
 }
 
 
