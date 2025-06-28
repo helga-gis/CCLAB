@@ -15,6 +15,17 @@ let dancer;
 let NUM_OF_PARTICLES = 200; // Decide the initial number of particles.
 let particles = [];
 
+// ⬇️ add these ⬇️
+
+// arduino
+let port;
+let connectBtn;
+let str; //string from arduino
+let val; // array with sensor values
+
+// ⬆️ add these ⬆️
+
+
 function preload(){
   ah = loadSound("assests/ahh.mp3");
 }
@@ -29,6 +40,26 @@ function setup() {
   dancer = new GisDancer(width / 2, height / 2);
 
   //colorMode(HSB);
+
+  // ⬇️ add these lines ⬇️
+
+  port = createSerial();
+
+  // in setup, we can open ports we have used previously
+  // without user interaction
+  let usedPorts = usedSerialPorts();
+  if (usedPorts.length > 0) {
+    port.open(usedPorts[0], 57600);
+  }
+
+  // any other ports can be opened via a dialog after
+  // user interaction (see connectBtnClick below)
+  connectBtn = createButton("Connect to Arduino");
+  connectBtn.position(20, 370);
+  connectBtn.mousePressed(connectBtnClick);
+
+  // ⬆️ add these lines ⬆️
+
 }
 
 function draw() {
@@ -90,7 +121,47 @@ function draw() {
   dancer.update();
   dancer.display();
 
+
+  // ⬇️ add these lines nd adjust the details ⬇️
+
+
+  str = port.readUntil("\n");
+  //str = trim(str); //remove any empty space
+
+  if (str.length > 0) {
+    val = int(str.split(",")); //split the values if there is a comma in between and convert them into numbers
+
+    // you receive three values from arduino that are stored
+    // in the array called val
+    // the first value is a range, see it like this
+    fill(255)
+    text(val[0], 20, 20)
+    // the second and third value are either 0 or 1 and will most likely
+    // trigger your dancer's two special motions
+  
+    if (val[0] > 500) {
+      // trigger your particles, you will have to adjust the threshold in the if statements
+          let burstX = random(width);
+          let burstY = random(height);
+      for (let i = 0; i < NUM_OF_PARTICLES; i++) {
+        let p = new Particle(burstX, burstY);
+        if (burstX > width / 2) {
+          p.speedX *= -1; 
+        }
+        particles.push(p);
+      }
+
+    }
+    if (val[1] == 1) {
+      dancer.triggerA() 
+    }
+    if (val[2] == 1) {
+      dancer.triggerD()
+    }
+  }
 }
+
+
 
 // You only code inside this class.
 // Start by giving the dancer your name, e.g. LeonDancer.
@@ -174,11 +245,16 @@ class GisDancer {
     // ******** //
     // ⬇️ draw your dancer from here ⬇️
 
+      if (this.hit == true && ah.isPlaying() == false) {
+    stroke(random(360), 255, 255);
+    strokeWeight(3);
+    ah.play();
+    }
     
     if (this.hit) {
     stroke(random(360), 255, 255);
     strokeWeight(3);
-    ahh.play();
+    // ah.play();
     } else {
     noStroke();
     }
@@ -397,3 +473,15 @@ class Particle {
  }
 
 }
+
+// ⬇️ add this function ⬇️
+
+function connectBtnClick() {
+  if (!port.opened()) {
+    port.open("Arduino", 57600);
+  } else {
+    port.close();
+  }
+}
+
+// ⬆️ add this function ⬆️
