@@ -37,8 +37,8 @@ let ffInJar = 0;  //bugs current in jar
 let currentSetCft = 0;  //current set (in jar)
 
 //instruction arrays
-let keys = ["A -- ", "S -- ", "M -- ", "C -- ", "Y -- "];
-let instructions = ["Add", "Switch", "Marks", "Mark Color", "Cat Mode"];
+let keys = ["A", "S", "M", "C", "Y"];
+let instructions = ["Add", "Switch", "Marks", "Mark Color", "Avatar Mode"];
 
 //slider settings
 let barTs = 100;
@@ -127,7 +127,7 @@ function draw() {
   }
 
   //mouse emoji
-  text("💤", mouseX, mouseY);
+  text("😪", mouseX, mouseY);
 
 
  // ⬇️ add these lines nd adjust the details ⬇️
@@ -237,12 +237,12 @@ function playPage() {
       let g = map(i, 0, keys.length - 1, 122, 0);
       let b = 203;
       fill(r, g, b);
-      text(keys[i] + instructions[i], width - 120, 50 + i * 28);
+      text(keys[i] + " -- " + instructions[i], width - 130, 50 + i * 30);
     }
 
   pop();
 
-  //cat 
+  ////////////// cat 
   cat.update();
   cat.display();
 
@@ -554,7 +554,7 @@ function addFfs(x, y) {
 function triggerConfettis(whichSet){
   for (let i = 0; i < ffs.length; i++){
     //let inJar and in current set bugs fly out of jar
-    if(ffs[i].inJar && ffs[i].jarSet == whichSet){
+    if(ffs[i].inJar == true && ffs[i].jarSet == whichSet){
       ffs[i].speedX = random(-1, 3);
       ffs[i].speedY = random(-2, -5);
       ffs[i].flyingOut = true;
@@ -592,7 +592,7 @@ function drawBf(x, y, size, r, g, b, trans, strokeTrans){
 }
 
 
-
+////////////interaction
 
 function mousePressed() {
   if (picked == false) {
